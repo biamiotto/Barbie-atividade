@@ -39,7 +39,6 @@ const getBarbieById = (req, res) => {
 const createBarbie = (req, res) => {
     const { nome, profissao, anoLancamento } = req.body;
 
-    // Validações obrigatórias básicas
     if (!nome || !profissao || !anoLancamento) {
         return res.status(400).json({
             success: false,
@@ -47,10 +46,8 @@ const createBarbie = (req, res) => {
         });
     }
 
-    // Gerar novo ID simples
     const novoId = barbies.length + 1;
 
-    // Criar novo bruxo
     const novaBarbie = {
         id: novoId,
         nome,
@@ -90,4 +87,45 @@ const deleteBarbie = (req, res) => {
     });
 };
 
-export { getAllBarbies, getBarbieById, createBarbie, deleteBarbie };
+const updateBarbie = (req, res) => {
+    const id = parseInt(req.params.id);
+    const { nome, profissao, anoLancamento } = req.body;
+
+    const idParaEditar = id;
+
+    if(isNaN(idParaEditar)){
+        return res.status(400).json({
+            seccess: false,
+            message: `O id deve ser um número válido.`
+        })
+    }
+    
+    const barbieExiste = barbies.find(barbie => barbie.id === idParaEditar);
+    if(!barbieExiste){
+        return res.status(400).json({
+            success: false,
+            message: `A Barbie com o id: ${idParaEditar} não existe!`
+        })
+    }
+
+    const barbiesAtualizadas = barbies.map(barbie =>
+        barbie.id === idParaEditar ? {
+            ...barbie,
+            ...(nome && { nome }),
+            ...(profissao && { profissao }),
+            ...(anoLancamento && { anoLancamento: parseInt(anoLancamento) }),
+        }
+            :barbie
+    );
+
+    barbies.splice(0, barbies.length, ...barbiesAtualizadas);
+
+    const barbieEditada = barbies.find(barbie => barbie.id === idParaEditar);
+    res.status(200).json({
+        success: true,
+        message: `Dados atualizados com sucesso!!`,
+        barbie: barbieEditada
+    })
+}
+
+export { getAllBarbies, getBarbieById, createBarbie, deleteBarbie, updateBarbie };
